@@ -97,6 +97,10 @@ int main()
               		char symbols[MAX_SIZE+1] = {0};
                     printf("Please enter the board dimensions:\n");
                     scanf("%d", &dim);
+                    if (dim <= 0) {
+                        printf("Please enter a valid dimension (0<dimension<21).\n");
+                        break;
+                    }
                     printf("Please enter the %d*%d puzzle board:\n", dim, dim);
                     scanf("%*[^\n]");
                     scanf("%*c");
@@ -106,15 +110,6 @@ int main()
                           find_and_add(0,grid[i][j], symbols);
                       }
                     }
-                    for (int i = 0; i < dim; i++) {
-                        for (int j = 0; j < dim; j++) {
-                            printf(" %c", grid[i][j]);
-                        }
-                        printf("\n");
-                    }
-                    for (int i = 0; i < dim; i++) {
-                        printf(" %c", symbols[i]);
-                    }
                     printf("\n");
                     char finalGrid[MAX_SIZE][MAX_SIZE];
                     for (int i = 0; i < dim; i++) {
@@ -123,22 +118,22 @@ int main()
                         }
                     }
                 if (task4_queens_battle(dim,grid,symbols,finalGrid, rows, cols, 0, 0, 0)) {
-                    printf("board ok\n");
+                    printf("Solution: \n");
                     for (int i = 0; i < dim; i++) {
                         for (int j = 0; j < dim; j++) {
-                            printf(" %c", finalGrid[i][j] + '0');
+                            if (finalGrid[i][j] == 1) {
+                                printf("X ");
+                            }
+                            else {
+                                printf("* ");
+                            }
+
                         }
                         printf("\n");
                     }
                 }
                 else {
-                    for (int i = 0; i < dim; i++) {
-                        for (int j = 0; j < dim; j++) {
-                            printf(" %c", finalGrid[i][j] + '0');
-                        }
-                        printf("\n");
-                    }
-                    printf("board not ok\n");
+                    printf("This puzzle cannot be solved\n");
                 }
                 break;
             }
@@ -225,21 +220,19 @@ int task4_queens_battle(int dim,
                         int current_symbol,
                         int current_x,
                         int current_y) {
-
-        printf("%d \n", current_symbol);
-
+    printf("%d " ,current_symbol);
   	if(current_symbol == dim) {
       	return 1;
     }
 
   	// Checks if the symbol is the right one, and if we can place the queen in this spot.
-  	if (grid[current_y][current_x] != symbols[current_symbol] ||
-        placements_x[current_x] ||
-        placements_y[current_y] ||
-        placements[current_y-1][current_x-1] ||
-        placements[current_y-1][current_x+1] ||
-        placements[current_y+1][current_x-1] ||
-        placements[current_y+1][current_x+1]) {
+    if (grid[current_y][current_x] != symbols[current_symbol] ||
+      placements_x[current_x] ||
+      placements_y[current_y] ||
+      (current_x > 0 && current_y > 0 && placements[current_y-1][current_x-1])||
+      (current_x < dim-1 && current_y > 0 && placements[current_y-1][current_x+1]) ||
+      (current_x > 0 && current_y < dim-1 && placements[current_y+1][current_x-1]) ||
+      (current_x < dim-1 && current_y < dim-1 && placements[current_y+1][current_x+1])) {
       	// Check if we reached the end of the grid.
       	if (current_x == dim-1 && current_y == dim -1) {
           return 0;
@@ -253,6 +246,9 @@ int task4_queens_battle(int dim,
   	placements_y[current_y] = 1;
   	if (task4_queens_battle(dim, grid, symbols, placements, placements_x, placements_y, current_symbol+1, 0, 0)) {
       	return 1;
+    }
+    if (current_x == dim-1 && current_y == dim -1) {
+        return 0;
     }
   	placements[current_y][current_x] = 0;
   	placements_x[current_x] = 0;
