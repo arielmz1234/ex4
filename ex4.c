@@ -13,6 +13,7 @@ Assignment: ex4
 #define DET_LENGTH 4
 #define MAX_WORD_LENGTH 15
 #define MAX_INPUT 100
+#define MAX_ATTEMPTS 1000
 #define ROW 0
 #define COLUMN 1
 #define COORDINATES 2
@@ -21,13 +22,13 @@ Assignment: ex4
 #define DETAIL_LENGTH 2
 #define DETAIL_DIRECTION 3
 int task1RobotPaths(int column, int row);
-float task2_human_pyramid(float weightMatrix[5][5], int column, int row);
+float task2_human_pyramid(float weightMatrix[NUM_OF_ROWS][NUM_OF_COLUMNS], int column, int row);
 int task3ParenthesisValidator(char c);
-int task4QueensBattle(int dim, char grid[][MAX_SIZE4], char symbols[],int symbolsStart[][2],int symbolsEnd[][2], char placements[][MAX_SIZE4],
+int task4QueensBattle(int dim, char grid[][MAX_SIZE4], char symbols[],int symbolsStart[][COORDINATES],int symbolsEnd[][COORDINATES], char placements[][MAX_SIZE4],
                         char placementsRows[], char placementsColumns[], int currentSymbol, int currentROW, int currentColumn);
 int findAndAdd(int index, char c, char symbols[]);
 int task5CrosswordGenerator(char grid[][MAX_SIZE5],char details[][DET_LENGTH+1], char words[][MAX_WORD_LENGTH+1],int slots,int dicSize, int placedWords[MAX_INPUT], int detailIndex,
-    int wordIndex, int attempt, int maxSize5, int maxInput);
+    int wordIndex, int attempt, int maxSize5, int maxInput, int maxAttempts);
 void insertWord(char direction, char grid[][MAX_SIZE5],char details[DET_LENGTH+1], char word[MAX_WORD_LENGTH+1]);
 int canPlaceWord(char grid[][MAX_SIZE5],char details[DET_LENGTH+1],char word[MAX_WORD_LENGTH+1], int letterIndex);
 int checkIfSizesMatch(char details[][DET_LENGTH+1],char words[][MAX_WORD_LENGTH+1],int dicSize,int slots,int detailIndex, int wordIndex);
@@ -267,7 +268,8 @@ int main() {
                         /* We check if the crossword is solvable in this function, if so the function returns 1 and
                         builds the grid of the crossword into grid, otherwise it returns 0, and
                         we can print that the crossword isn't solvable*/
-                        if (!task5CrosswordGenerator(grid, details, words, slots, dicSize, placedWords, 0, 0, 0, MAX_SIZE5, MAX_INPUT)){
+                        if (!task5CrosswordGenerator(grid, details, words, slots, dicSize, placedWords, 0,
+                            0, 0, MAX_SIZE5, MAX_INPUT, MAX_ATTEMPTS)){
                             printf("This crossword cannot be solved.\n");
                         } else {
                             // We print the crossword as requested
@@ -315,7 +317,7 @@ int task1RobotPaths(int column, int row) {
            task1RobotPaths(column - 1, row);
 }
 
-float task2_human_pyramid(float weightMatrix[5][5], int row, int column) {
+float task2_human_pyramid(float weightMatrix[NUM_OF_ROWS][NUM_OF_COLUMNS], int row, int column) {
     if (column == -1 || row == -1) {
         return 0;
     }
@@ -394,17 +396,9 @@ int findAndAdd(int index, char c, char symbols[]) {
     }
 }
 
-int task4QueensBattle(int dim,
-                        char grid[][MAX_SIZE4],
-                        char symbols[],
-                        int symbolsStart[][COORDINATES],
-                        int symbolsEnd[][COORDINATES],
-                        char placements[][MAX_SIZE4],
-                        char placementsRows[],
-                        char placementsColumns[],
-                        int currentSymbol,
-                        int currentROW,
-                        int currentColumn) {
+int task4QueensBattle(int dim, char grid[][MAX_SIZE4], char symbols[], int symbolsStart[][COORDINATES],
+                        int symbolsEnd[][COORDINATES], char placements[][MAX_SIZE4], char placementsRows[],
+                        char placementsColumns[], int currentSymbol, int currentROW, int currentColumn) {
     // If we got here that means we placed a queen for each symbol and we can return 0
     if (currentSymbol == dim || symbols[currentSymbol] == 0) {
 
@@ -471,7 +465,7 @@ int task4QueensBattle(int dim,
 
 int task5CrosswordGenerator(char grid[][MAX_SIZE5],char details[][DET_LENGTH+1],
     char words[][MAX_WORD_LENGTH+1],int slots,int dicSize, int placedWords[MAX_INPUT], int detailIndex,
-    int wordIndex, int attempt, int maxSize5, int maxInput) {
+    int wordIndex, int attempt, int maxSize5, int maxInput, int maxAttempts) {
     /* If the detailIndex is equal to the number of details(slots)
     that means we found a word for each detail, and we built the crossword*/
     if (detailIndex == slots) {
@@ -486,18 +480,18 @@ int task5CrosswordGenerator(char grid[][MAX_SIZE5],char details[][DET_LENGTH+1],
             resetGrid(grid, 0, 0,maxSize5);
             resetArray(placedWords, 0,maxInput);
             return task5CrosswordGenerator(grid, details, words, slots, dicSize, placedWords, 0,
-                0, attempt + 1, maxSize5, maxInput);;
+                0, attempt + 1, maxSize5, maxInput, maxAttempts);;
         }
         // If we got here that means that we can check another word so we raise the wordIndex by 1
         return task5CrosswordGenerator(grid, details, words, slots, dicSize, placedWords, detailIndex,
-            wordIndex + 1, attempt, maxSize5,  maxInput);
+            wordIndex + 1, attempt, maxSize5,  maxInput, maxAttempts);
     }
     // If we cant place a word on the grid we enter here
     if (!canPlaceWord(grid,details[detailIndex],words[wordIndex], 0)) {
         /* If we got to the last word and the attempt got to 1000 that means we tried every combination,
         and we return 0 because the crossword isn't solvable*/
         if (wordIndex >= dicSize - 1) {
-            if (attempt == 1000) {
+            if (attempt == maxAttempts) {
                 return 0;
             }
             /* If we got to here that means we got to the last word so we reorder the words array placing this word first
@@ -506,11 +500,11 @@ int task5CrosswordGenerator(char grid[][MAX_SIZE5],char details[][DET_LENGTH+1],
             resetGrid(grid, 0, 0,maxSize5);
             resetArray(placedWords, 0,maxInput);
            return task5CrosswordGenerator(grid, details, words, slots, dicSize, placedWords, 0,
-               0, attempt + 1, maxSize5,  maxInput);
+               0, attempt + 1, maxSize5,  maxInput, maxAttempts);
         }
         // If we got here that means that we can check another word so we raise the wordIndex by 1
         return task5CrosswordGenerator(grid, details, words, slots, dicSize, placedWords, detailIndex,
-            wordIndex + 1, attempt, maxSize5,  maxInput);
+            wordIndex + 1, attempt, maxSize5,  maxInput, maxAttempts);
     }
     /* If we got here that means we can place the word in that slot,
     so we use insert word and change the value in the placedWords array to 1 (true) for that word*/
@@ -518,7 +512,7 @@ int task5CrosswordGenerator(char grid[][MAX_SIZE5],char details[][DET_LENGTH+1],
     placedWords[wordIndex] = 1;
     // So now we move on to the next slot
     return task5CrosswordGenerator(grid, details, words, slots, dicSize, placedWords, detailIndex + 1,
-        0, attempt, maxSize5,  maxInput);
+        0, attempt, maxSize5,  maxInput, maxAttempts);
 }
 /* checkIfSizesMatch checks if every word length got a slot with the same length,
 if not we know that the crossword isn't solvable*/
