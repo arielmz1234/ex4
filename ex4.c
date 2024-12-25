@@ -23,7 +23,7 @@ Assignment: ex4
 #define DETAIL_DIRECTION 3
 int task1RobotPaths(int column, int row);
 float task2_human_pyramid(float weightMatrix[NUM_OF_ROWS][NUM_OF_COLUMNS], int column, int row);
-int task3ParenthesisValidator(char c);
+int task3ParenthesisValidator(char closer);
 int task4QueensBattle(int dim, char grid[][MAX_SIZE4], char symbols[],int symbolsStart[][COORDINATES],int symbolsEnd[][COORDINATES], char placements[][MAX_SIZE4],
                         char placementsRows[], char placementsColumns[], int currentSymbol, int currentROW, int currentColumn);
 int findAndAdd(int index, char c, char symbols[]);
